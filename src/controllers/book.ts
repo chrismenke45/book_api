@@ -11,7 +11,7 @@ const bookController: BookController = {
         const searchType = req.query.searchType
         const bookSearch = async () => {
             const res = await axios.get(`${process.env.GOOGLE_API_URL}volumes?q=flowers+inauthor:keyes&key=${process.env.GOOGLE_API_KEY}`)
-            console.log(res.data)
+            //console.log(res.data)
         }
         bookSearch()
 

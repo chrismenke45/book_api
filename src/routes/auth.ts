@@ -5,6 +5,8 @@ import authController from "../controllers/auth"
 let authRouter: Router = express.Router();
 
 /* GET home page. */
-authRouter.get('/login', authController.login);
+authRouter.post('/login', authController.login);
+
+authRouter.post('/register', authController.register);
 
 export default authRouter

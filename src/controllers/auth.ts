@@ -29,9 +29,8 @@ const authController: AuthController = {
               hashedPassword: hash,
             })
             user.save().then((theUser) => {
-              console.log(theUser)
+              res.status(200).json({ message: "User created" })
             })
-            res.send("register route")
           })
           .catch((err) => {
             console.error(err)

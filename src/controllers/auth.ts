@@ -1,5 +1,7 @@
 import { RequestHandler } from "express";
 import { UserModel } from "../models/user";
+import bcrypt from "bcrypt";
+import { getHashes } from "crypto";
 
 interface AuthController {
     login: RequestHandler;
@@ -11,16 +13,22 @@ const authController: AuthController = {
         res.send("login route")
     },
     register(req, res, next) {
-        console.log("**********")
-        console.log(req.body)
-        let user = new UserModel({
+        bcrypt.hash(req.body.password, Number(process.env.SALT_ROUNDS) || 1)
+        .then(hash => {
+            let user = new UserModel({
             username: req.body.username,
-            hashedPassword: req.body.password,
+            hashedPassword: hash,
+            })
+            user.save()
+            .then(theUser => {
+                console.log(theUser)
+            })
+            res.send("register route")
         })
-        user.save().then(theUser => {
-            console.log(theUser)
+        .catch(err => {
+            console.error(err)
+            return next(err)
         })
-        res.send("register route")
     }
 }
 

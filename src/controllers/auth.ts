@@ -2,17 +2,12 @@ import { RequestHandler } from "express"
 import { UserModel } from "../models/user"
 import bcrypt from "bcrypt"
 
-interface AuthController {
-  login: RequestHandler
-  register: RequestHandler
-}
-
 let findUser = async function (username: string) {
   let usernameAlreadyUser = await UserModel.find({ username: username })
   return usernameAlreadyUser
 }
 
-const authController: AuthController = {
+const authController: Record<string, RequestHandler> = {
   login(req, res, next) {
     res.send("login route")
   },

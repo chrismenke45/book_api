@@ -1,23 +1,46 @@
 import { RequestHandler } from "express"
 import { UserModel } from "../models/user"
 import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
 let findUser = async function (username: string) {
-  let usernameAlreadyUser = await UserModel.find({ username: username })
-  return usernameAlreadyUser
+  let user = await UserModel.findOne({ username: username })
+  return user
 }
+
+const saltRounds: number = Number(process.env.SALT_ROUNDS) || 1
+const secretKey: string = process.env.SECRETKEY || "secret"
 
 const authController: Record<string, RequestHandler> = {
   login(req, res, next) {
-    res.send("login route")
+    findUser(req.body.username)
+      .then((theUser) => {
+        if (theUser) {
+          bcrypt
+            .compare(req.body.password, theUser.hashedPassword)
+            .then((correctPassword) => {
+              if (correctPassword) {
+                res.json(jwt.sign(JSON.stringify({username: theUser.username}), secretKey))
+              } else {
+                res.json({ error: "Username or Password Incorrect" })
+              }
+            })
+        } else {
+          res.json({ error: "Username not found" })
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        return next(err)
+      })
   },
   register(req, res, next) {
-    findUser(req.body.username).then((usernameAlreadyUser) => {
-      if (usernameAlreadyUser.length !== 0) {
+    findUser(req.body.username).then((existingUser) => {
+      if (existingUser) {
         res.status(422).json({ message: "Username already taken" })
       } else {
         bcrypt
-          .hash(req.body.password, Number(process.env.SALT_ROUNDS) || 1)
+          .hash(req.body.password, saltRounds)
           .then((hash) => {
             let user = new UserModel({
               username: req.body.username,

@@ -6,12 +6,14 @@ const bookController: Record<string, RequestHandler> = {
     const search = req.query.search
     const searchType = req.query.searchType
     const bookSearch = async () => {
+      let searchParam = ""
+      searchParam += searchType || ""
+      searchParam += search
       const res = await axios.get(
-        `${process.env.GOOGLE_API_URL}volumes?q=flowers+inauthor:keyes&key=${process.env.GOOGLE_API_KEY}`
+        `${process.env.GOOGLE_API_URL}volumes?q=${searchParam}&projection=full&key=${process.env.GOOGLE_API_KEY}`
       )
-      //console.log(res.data)
+      return res.data
     }
-    bookSearch()
 
     res.send("Books API")
   },

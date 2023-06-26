@@ -12,10 +12,24 @@ const bookController: Record<string, RequestHandler> = {
       const res = await axios.get(
         `${process.env.GOOGLE_API_URL}volumes?q=${searchParam}&projection=full&key=${process.env.GOOGLE_API_KEY}`
       )
+      console.log(res.data.items[0].volumeInfo)
       return res.data
     }
-
-    res.send("Books API")
+    bookSearch().then((bookRes) => {
+      let bookList = bookRes.items.map((book: any) => {
+        const isbn = book.volumeInfo.industryIdentifiers?.filter((identifier:any) => identifier.type === "ISBN_13")[0]
+        console.log("book", book)
+        return {
+          title: book.volumeInfo.title,
+          ISBN13: isbn?.identifier || null,
+          pageCount: book.volumeInfo.pageCount,
+          authors: book.volumeInfo.authors,
+          image: book.volumeInfo.imageLinks?.smallThumbnail || null
+        }
+      })
+      console.log(bookList)
+      res.json({books: bookList})
+    })
   },
 }
 

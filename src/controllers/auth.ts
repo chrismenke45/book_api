@@ -8,9 +8,6 @@ let findUser = async function (username: string) {
   return user
 }
 
-const saltRounds: number = Number(process.env.SALT_ROUNDS) || 1
-const secretKey: string = process.env.SECRETKEY || "secret"
-
 const authController: Record<string, RequestHandler> = {
   login(req, res, next) {
     findUser(req.body.username)
@@ -20,7 +17,7 @@ const authController: Record<string, RequestHandler> = {
             .compare(req.body.password, theUser.hashedPassword)
             .then((correctPassword) => {
               if (correctPassword) {
-                res.json(jwt.sign(JSON.stringify({username: theUser.username}), secretKey))
+                res.json(jwt.sign(JSON.stringify({username: theUser.username}), process.env.SECRETKEY!))
               } else {
                 res.json({ error: "Username or Password Incorrect" })
               }
@@ -40,7 +37,7 @@ const authController: Record<string, RequestHandler> = {
         res.status(422).json({ message: "Username already taken" })
       } else {
         bcrypt
-          .hash(req.body.password, saltRounds)
+          .hash(req.body.password, process.env.SALT_ROUNDS!)
           .then((hash) => {
             let user = new UserModel({
               username: req.body.username,
